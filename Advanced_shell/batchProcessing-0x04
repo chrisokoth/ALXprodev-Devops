@@ -47,3 +47,5 @@ done
 wait
 
 echo "All Pokémon data retrieval processes have completed."
+["jobs"]
+["kill", "jobs"]
