@@ -42,3 +42,4 @@ fi
 
 # Clean up temporary file
 rm "$TEMP_FILE"
+["sed"]
