@@ -15,9 +15,12 @@ HEIGHT=$(jq -r '.height' "$JSON_FILE")
 WEIGHT=$(jq -r '.weight' "$JSON_FILE")
 TYPE=$(jq -r '.types[0].type.name' "$JSON_FILE")
 
+# Format the height and weight using awk
+FORMATTED_HEIGHT=$(echo "$HEIGHT" | awk '{printf "%.1f", $1/10}')  # Convert to meters
+FORMATTED_WEIGHT=$(echo "$WEIGHT" | awk '{printf "%.1f", $1/10}')  # Convert to kg
+
 # Format the output
-OUTPUT="$NAME is of type $TYPE, weighs ${WEIGHT}kg, and is ${HEIGHT}m tall."
+OUTPUT="$NAME is of type $TYPE, weighs ${FORMATTED_WEIGHT}kg, and is ${FORMATTED_HEIGHT}m tall."
 
-# Print the output
+# Print the output using sed to ensure proper formatting
 echo "$OUTPUT" | sed 's/^\(.*\)$/\U\1/'  # Capitalize the first letter of the output
-
