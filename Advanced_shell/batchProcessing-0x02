@@ -10,17 +10,30 @@ BASE_URL="https://pokeapi.co/api/v2/pokemon"
 for POKEMON in "${POKEMON_LIST[@]}"; do
     # Define the output file name
     OUTPUT_FILE="${POKEMON}.json"
+    MAX_RETRIES=3
+    RETRY_COUNT=0
+    SUCCESS=0
 
-    # Make the API request and save the response
-    response=$(curl -s -w "%{http_code}" -o "$OUTPUT_FILE" "$BASE_URL/$POKEMON")
+    # Retry loop
+    while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+        # Make the API request and save the response
+        response=$(curl -s -w "%{http_code}" -o "$OUTPUT_FILE" "$BASE_URL/$POKEMON")
 
-    # Check if the request was successful
-    if [ "$response" -ne 200 ]; then
-        echo "Error: Failed to retrieve data for $POKEMON. HTTP status code: $response" >> errors.txt
-    else
-        echo "Data successfully retrieved for $POKEMON and saved to $OUTPUT_FILE."
+        # Check if the request was successful
+        if [ "$response" -eq 200 ]; then
+            echo "Data successfully retrieved for $POKEMON and saved to $OUTPUT_FILE."
+            SUCCESS=1
+            break  # Exit the retry loop on success
+        else
+            echo "Error: Failed to retrieve data for $POKEMON. HTTP status code: $response"
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "Retrying ($RETRY_COUNT/$MAX_RETRIES)..."
+            sleep 1  # Wait before retrying
+        fi
+    done
+
+    # If still not successful after retries, log the error
+    if [ $SUCCESS -eq 0 ]; then
+        echo "Failed to retrieve data for $POKEMON after $MAX_RETRIES attempts." >> errors.txt
     fi
-
-    # Add a delay to handle rate limiting
-    sleep 1  # Delay for 1 second between requests
 done
